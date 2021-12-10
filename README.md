@@ -1,6 +1,6 @@
-# movie-ticket-slack-notifier
+# movie-ticket-notifier-ses
 
-A simple AWS Lambda function that notify's movie ticket availability on Slack channel by SNS topic
+A simple AWS Lambda function with AWS SAM and SES that notify's movie ticket availability on email
 
 This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
 
