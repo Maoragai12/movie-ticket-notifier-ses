@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: A simple AWS Lambda function with AWS SAM and SES that notify's movie ticket availability on email
+Parameters:
+  EnvType:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+    ConstraintDescription: Must specify "dev" (default), "test" or "prod"
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+    Runtime: nodejs14.x
+    Tracing: Active
+    AutoPublishAlias: !Ref EnvType
+    Layers:
+      - !Sub
+        arn:${AWS::Partition}:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:14
+    Architectures:
+      - x86_64
+Resources:
+  MovieTicketNotifierFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/resource/handler/app.handler
+      Description: A simple AWS Lambda function with AWS SAM and SES that notify's movie ticket availability on email
+      Policies:
+        - SESCrudPolicy:
+            IdentityName: EMAIL_ADDRESS
+      Events:
+        CloudWatchEvent:
+          Type: Schedule
+          Properties:
+            Schedule: "rate(5 minutes)"
+  MovieTicketNotifierFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: MovieTicketNotifierFunction
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub /${AWS::Partition}/lambda/${MovieTicketNotifierFunction}
+      RetentionInDays: 14
+Outputs:
+  MovieTicketNotifierFunctionArn:
+    Value: !GetAtt MovieTicketNotifierFunction.Arn
+  MovieTicketNotifierFunctionLogGroup:
+    Value: !Ref MovieTicketNotifierFunctionLogGroup
